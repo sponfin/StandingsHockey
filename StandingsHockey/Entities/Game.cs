@@ -3,6 +3,7 @@
     public partial class Game
     {
         public int Id { get; set; }
+
         public DateTime DateGame { get; set; }
         public string TimeGame { get; set; } = null!;
         public string ResultGame { get; set; } = null!;

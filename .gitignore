@@ -356,5 +356,6 @@ StandingsHockey/bin
 StandingsHockey/obj
 description.txt
 hcstart.sql
+ExampleCode.cs
 
 
