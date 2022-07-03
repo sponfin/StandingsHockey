@@ -98,6 +98,36 @@ namespace StandingsHockey.Controllers
         }
 
 
+        private int ResultToIntCount(string Result)
+        {
+
+            bool result = int.TryParse(Result, out var resultIntCount);
+            if (result == true)
+                resultIntCount = int.Parse(Result);
+            else
+            {
+                if (Result == "+")
+                    resultIntCount = 1;
+                else
+                    resultIntCount = 0;
+            }
+
+            return resultIntCount;
+        }
+
+        private int ResultToIntSum(string Result)
+        {
+
+            bool result = int.TryParse(Result, out var resultIntCountSum);
+            if (result == true)
+                resultIntCountSum = int.Parse(Result);
+            else
+                resultIntCountSum = 0;
+
+            return resultIntCountSum;
+        }
+
+
         public async Task<List<Standings>> GetScore()
         {
             var gamesInTurney = await GetGamesInTurney();
@@ -114,17 +144,54 @@ namespace StandingsHockey.Controllers
                 totalScoreSum = gamesInTurney.Where(x => x.NameTeam1 == teams[i]).Sum(x => x.Score1);
                 totalScoreSum += gamesInTurney.Where(x => x.NameTeam2 == teams[i]).Sum(x => x.Score2);
 
+                int wins = 0;
+                wins = gamesInTurney.Where(x => x.NameTeam1 == teams[i]).Count(x => ResultToIntCount(x.Result1) > ResultToIntCount(x.Result2) && x.IsSO == false);
+                wins += gamesInTurney.Where(x => x.NameTeam2 == teams[i]).Count(x => ResultToIntCount(x.Result2) > ResultToIntCount(x.Result1) && x.IsSO == false);
+
+                int winsSo = 0;
+                winsSo = gamesInTurney.Where(x => x.NameTeam1 == teams[i]).Count(x => ResultToIntCount(x.Result1) > ResultToIntCount(x.Result2) && x.IsSO == true);
+                winsSo += gamesInTurney.Where(x => x.NameTeam2 == teams[i]).Count(x => ResultToIntCount(x.Result2) > ResultToIntCount(x.Result1) && x.IsSO == true);
+
+                int losses = 0;
+                losses = gamesInTurney.Where(x => x.NameTeam1 == teams[i]).Count(x => ResultToIntCount(x.Result1) < ResultToIntCount(x.Result2) && x.IsSO == false);
+                losses += gamesInTurney.Where(x => x.NameTeam2 == teams[i]).Count(x => ResultToIntCount(x.Result2) < ResultToIntCount(x.Result1) && x.IsSO == false);
+
+                int lossesSo = 0;
+                lossesSo = gamesInTurney.Where(x => x.NameTeam1 == teams[i]).Count(x => ResultToIntCount(x.Result1) < ResultToIntCount(x.Result2) && x.IsSO == true);
+                lossesSo += gamesInTurney.Where(x => x.NameTeam2 == teams[i]).Count(x => ResultToIntCount(x.Result2) < ResultToIntCount(x.Result1) && x.IsSO == true);
+
+                int goalsFor = 0;
+                goalsFor = gamesInTurney.Where(x => x.NameTeam1 == teams[i]).Sum(x => ResultToIntSum(x.Result1));
+                goalsFor += gamesInTurney.Where(x => x.NameTeam2 == teams[i]).Sum(x => ResultToIntSum(x.Result2));
+
+                int goalsAgainst = 0;
+                goalsAgainst = gamesInTurney.Where(x => x.NameTeam1 == teams[i]).Sum(x => ResultToIntSum(x.Result2));
+                goalsAgainst += gamesInTurney.Where(x => x.NameTeam2 == teams[i]).Sum(x => ResultToIntSum(x.Result1));
+
+                int goalDifferential = 0;
+                goalDifferential = goalsFor - goalsAgainst;
+
+
+
+
 
                 result.Add(new Standings()
                 {
                     NameTeam = teams[i],
-                    Score = totalScoreSum
+                    Points = totalScoreSum,
+                    Wins = wins,
+                    WinsSO = winsSo,
+                    Losses = losses,
+                    LossesSO = lossesSo,
+                    GoalsFor = goalsFor,
+                    GoalsAgainst = goalsAgainst,
+                    GoalDifferential = goalDifferential,
                     //ResultSeason = _db.Seasons.Single(x => x.SeasonId == id),
                     //TotalScore = totalScoreSum,
                     //WinCount = _db.Gameses.Count(x => x.WinTeam.TeamId == tempListTeam1[i])
                 });
             }
-            result = result.OrderByDescending(x => x.Score).ToList();
+            result = result.OrderByDescending(x => x.Points).ToList();
             return result;
         }
     }
