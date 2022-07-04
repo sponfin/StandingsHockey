@@ -118,8 +118,8 @@ namespace StandingsHockey.Controllers
         private int ResultToIntSum(string Result)
         {
 
-            bool result = int.TryParse(Result, out var resultIntCountSum);
-            if (result == true)
+            bool isInt = int.TryParse(Result, out var resultIntCountSum);
+            if (isInt == true)
                 resultIntCountSum = int.Parse(Result);
             else
                 resultIntCountSum = 0;
